@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Supervision Industrielle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 250px;
+            background: #1e3a8a;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .kpi-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin: 10px 0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .energy-consumption {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        #energyChart {
+            height: 250px;
+            margin-top: 20px;
+        }
+
+        .file-upload {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .real-time-data {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .real-time-data {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Supervision Industrielle</h2>
+        <nav style="margin-top: 40px;">
+            <ul style="list-style: none;">
+                <li><a href="#" class="nav-link"><i class="fas fa-industry"></i> Production</a></li>
+                <li><a href="#" class="nav-link"><i class="fas fa-bolt"></i> Énergie</a></li>
+                <li><a href="#" class="nav-link"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                <li><a href="#" class="nav-link"><i class="fas fa-cog"></i> Paramètres</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="dashboard-header">
+            <h1>Tableau de Bord Industriel Pour admin "AMAL"</h1>
+            <div class="controls">
+                <button class="btn btn-primary" onclick="startProduction()">
+                    <i class="fas fa-play"></i> Démarrer Production
+                </button>
+                <button class="btn btn-danger" onclick="stopProduction()">
+                    <i class="fas fa-stop"></i> Arrêter Production
+                </button>
+            </div>
+        </div>
+
+        <div class="real-time-data">
+            <div class="kpi-card">
+                <h3>Production Quotidienne</h3>
+                <div class="kpi-value" id="productionValue">200</div>
+                <div class="kpi-trend">↑ 5% vs hier</div>
+            </div>
+
+            <div class="kpi-card">
+                <h3>Efficacité Globale</h3>
+                <div class="kpi-value" id="efficiencyValue">95%</div>
+                <div class="kpi-trend">→ Stable</div>
+            </div>
+
+            <div class="kpi-card energy-consumption">
+                <h3>Consommation d'Énergie</h3>
+                <div class="kpi-value" id="energyValue">515 kWh</div>
+                <div class="kpi-trend">↓ 12% vs mois dernier</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Analyse de Consommation</h3>
+                <div id="energyChart"></div>
+            </div>
+
+            <div class="card">
+                <h3>Contrôles de Production</h3>
+                <div class="file-upload">
+                    <input type="file" id="factoryFile" hidden onchange="handleFileUpload(this)">
+                    <button class="btn btn-primary" onclick="document.getElementById('factoryFile').click()">
+                        <i class="fas fa-file-import"></i> Importer Configuration
+                    </button>
+                    <p id="selectedFile">Fichier sélectionné : Aucun</p>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="generateReport()">
+                        <i class="fas fa-print"></i> Générer Rapport
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <script>
+        // Configuration initiale
+        let productionData = {
+            active: false,
+            currentProduction: 200,
+            efficiency: 95,
+            energyConsumption: 515
+        };
+
+        // Graphique énergie
+        const energyChartOptions = {
+            chart: { type: 'bar', height: 350 },
+            series: [{
+                name: 'Consommation',
+                data: [500, 515, 490, 530, 510]
+            }],
+            xaxis: {
+                categories: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven']
+            },
+            colors: ['#3B82F6']
+        };
+
+        const energyChart = new ApexCharts(document.querySelector("#energyChart"), energyChartOptions);
+        energyChart.render();
+
+        // Fonctions de contrôle
+        function startProduction() {
+            productionData.active = true;
+            updateProductionDisplay();
+            simulateRealTimeData();
+        }
+
+        function stopProduction() {
+            productionData.active = false;
+            clearInterval(productionInterval);
+        }
+
+        function simulateRealTimeData() {
+            productionInterval = setInterval(() => {
+                if(productionData.active) {
+                    productionData.currentProduction += Math.floor(Math.random() * 10);
+                    productionData.efficiency = 95 + (Math.random() * 2 - 1);
+                    productionData.energyConsumption += Math.random() * 20 - 10;
+                    updateProductionDisplay();
+                }
+            }, 2000);
+        }
+
+        function updateProductionDisplay() {
+            document.getElementById('productionValue').textContent = productionData.currentProduction;
+            document.getElementById('efficiencyValue').textContent = productionData.efficiency.toFixed(1) + '%';
+            document.getElementById('energyValue').textContent = productionData.energyConsumption.toFixed(0) + ' kWh';
+        }
+
+        // Gestion fichiers
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if(file) {
+                document.getElementById('selectedFile').textContent = `Fichier sélectionné : ${file.name}`;
+                // Traitement du fichier ici
+            }
+        }
+
+        // Génération PDF
+        window.jsPDF = window.jspdf.jsPDF;
+        
+        async function generateReport() {
+            const element = document.body;
+            const canvas = await html2canvas(element);
+            const pdf = new jsPDF('landscape');
+            const imgData = canvas.toDataURL('image/png');
+            
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('rapport-production.pdf');
+        }
+
+        // Simulation données initiales
+        simulateRealTimeData();
+    </script>
+</body>
+</html>
