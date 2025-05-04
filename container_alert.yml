@@ -1,0 +1,11 @@
+groups:
+- name: container-status
+  rules:
+  - alert: WebContainerDown
+    expr: absent(container_last_seen{name="supervision_industrielle_web"} == 1)
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Conteneur web arrêté"
+      description: "Le conteneur supervision_industrielle_web est arrêté ou ne répond plus depuis plus d'une minute."

@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # Service web
+  web:
+    image: dashboard:latest
+    container_name: supervision_industrielle_web
+    ports:
+      - '80:80'  
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./container_alert.yml:/etc/prometheus/container_alert.yml  # Montée du fichier de configuration d'alertes
+    ports:
+      - "9090:9090"  
+    restart: unless-stopped
+
+  # Service cAdvisor (Monitoring des conteneurs)
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8080:8080"  # Port d'accès à cAdvisor
+    volumes:
+      - /:/rootfs:ro  # Accès aux données système
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    restart: unless-stopped
+
+  # Service Alertmanager avec le fichier correct
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    volumes:
+      - ./alert_manager.yml:/etc/alertmanager.yml  
+    ports:
+      - "9093:9093" 
+    restart: unless-stopped
