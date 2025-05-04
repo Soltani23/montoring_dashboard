@@ -1,0 +1,15 @@
+route:
+  receiver: email-admin
+  group_wait: 10s
+  group_interval: 5m
+  repeat_interval: 3h
+
+receivers:
+- name: email-admin
+  email_configs:
+  - to: 'amalalert59@email.com'
+    from: 'amalalert59@email.com'
+    smarthost: 'smtp.gmail.com:587'
+    auth_username: 'amalalert59@gmail.com'
+    auth_password: 'amoul2025'  # mot de passe d'application Gmail
+    require_tls: true
